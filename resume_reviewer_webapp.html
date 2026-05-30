@@ -1,0 +1,316 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.app { padding: 1.5rem 0; }
+.header { margin-bottom: 1.5rem; }
+.header h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.header p { font-size: 14px; color: var(--color-text-secondary); margin-top: 4px; }
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: var(--border-radius-md); background: var(--color-background-info); color: var(--color-text-info); margin-bottom: 12px; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.card-title { font-size: 14px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+.upload-area { border: 1.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 2.5rem 1rem; text-align: center; cursor: pointer; transition: background 0.15s; background: var(--color-background-secondary); }
+.upload-area:hover { background: var(--color-background-tertiary); }
+.upload-area i { font-size: 32px; color: var(--color-text-secondary); display: block; margin-bottom: 10px; }
+.upload-area p { font-size: 14px; color: var(--color-text-secondary); }
+.upload-area span { font-size: 12px; color: var(--color-text-tertiary); margin-top: 4px; display: block; }
+textarea { width: 100%; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 0.75rem; font-size: 14px; font-family: var(--font-sans); color: var(--color-text-primary); background: var(--color-background-primary); resize: vertical; min-height: 140px; outline: none; }
+textarea:focus { border-color: var(--color-border-primary); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.jd-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-text-secondary); margin-bottom: 0.75rem; cursor: pointer; }
+.jd-toggle input { cursor: pointer; }
+.analyze-btn { width: 100%; padding: 0.75rem; background: var(--color-text-primary); color: var(--color-background-primary); border: none; border-radius: var(--border-radius-md); font-size: 15px; font-weight: 500; font-family: var(--font-sans); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 0.25rem; }
+.analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.results { display: none; }
+.results.show { display: block; }
+.score-circle { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 26px; font-weight: 500; border: 3px solid; }
+.score-wrap { display: flex; align-items: center; gap: 1.25rem; }
+.score-label { font-size: 14px; color: var(--color-text-secondary); margin-top: 2px; }
+.score-label span { font-size: 18px; font-weight: 500; color: var(--color-text-primary); display: block; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.875rem; text-align: center; }
+.metric-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.metric-val { font-size: 20px; font-weight: 500; }
+.metric-bar { height: 3px; background: var(--color-border-tertiary); border-radius: 99px; margin-top: 6px; overflow: hidden; }
+.metric-fill { height: 100%; border-radius: 99px; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 12px; padding: 4px 10px; border-radius: var(--border-radius-md); font-weight: 500; }
+.tag-green { background: var(--color-background-success); color: var(--color-text-success); }
+.tag-red { background: var(--color-background-danger); color: var(--color-text-danger); }
+.tag-amber { background: var(--color-background-warning); color: var(--color-text-warning); }
+.tag-blue { background: var(--color-background-info); color: var(--color-text-info); }
+.item-list { list-style: none; }
+.item-list li { font-size: 13px; color: var(--color-text-primary); padding: 6px 0; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+.item-list li:last-child { border-bottom: none; }
+.item-list li i { margin-top: 2px; flex-shrink: 0; font-size: 15px; }
+.section-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.q-item { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; margin-bottom: 8px; font-size: 13px; color: var(--color-text-primary); display: flex; gap: 10px; line-height: 1.5; }
+.q-num { font-weight: 500; color: var(--color-text-secondary); flex-shrink: 0; }
+.verdict { display: flex; align-items: center; gap: 12px; padding: 1rem 1.25rem; border-radius: var(--border-radius-lg); border: 0.5px solid; }
+.verdict-icon { font-size: 28px; }
+.verdict-title { font-size: 15px; font-weight: 500; }
+.verdict-sub { font-size: 13px; margin-top: 2px; }
+.loading-bar { display: none; }
+.loading-bar.show { display: block; }
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--color-background-primary); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.divider { height: 0.5px; background: var(--color-border-tertiary); margin: 1rem 0; }
+.align-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 5px 14px; border-radius: 99px; }
+.error-msg { background: var(--color-background-danger); color: var(--color-text-danger); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; font-size: 13px; display: none; }
+.error-msg.show { display: block; }
+</style>
+
+<div class="app">
+  <h2 class="sr-only">AI-powered resume reviewer for senior tech recruiters</h2>
+  <div class="header">
+    <div class="badge"><i class="ti ti-briefcase" aria-hidden="true"></i> Senior Recruiter · AI Evaluation Suite</div>
+    <h1>Resume reviewer</h1>
+    <p>Paste a resume, optionally add a job description, and get a full recruiter-grade analysis.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-file-text" aria-hidden="true"></i> Resume content</div>
+    <textarea id="resumeText" placeholder="Paste the candidate's full resume here — work experience, education, projects, skills, etc.&#10;&#10;Tip: paste the plain text content for best results."></textarea>
+  </div>
+
+  <div class="card">
+    <label class="jd-toggle">
+      <input type="checkbox" id="jdToggle"> Include job description for alignment check
+    </label>
+    <div id="jdBox" style="display:none;">
+      <textarea id="jdText" placeholder="Paste the job description here — role, requirements, responsibilities..." style="min-height:110px;"></textarea>
+    </div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+    <span class="spinner" id="spinner" style="display:none;"></span>
+    <i class="ti ti-wand" aria-hidden="true" id="btnIcon"></i>
+    <span id="btnText">Analyze resume</span>
+  </button>
+
+  <div class="results" id="results" style="margin-top:1.5rem;">
+
+    <div class="card" id="verdictCard"></div>
+
+    <div class="row">
+      <div class="card" id="scoreCard"></div>
+      <div class="card" id="metricsCard"></div>
+    </div>
+
+    <div class="row">
+      <div class="card" id="strengthsCard"></div>
+      <div class="card" id="weaknessesCard"></div>
+    </div>
+
+    <div class="card" id="missingCard"></div>
+
+    <div class="card" id="improvementsCard"></div>
+
+    <div class="card" id="questionsCard"></div>
+
+    <div id="alignmentCard" class="card" style="display:none;"></div>
+
+  </div>
+</div>
+
+<script>
+document.getElementById('jdToggle').addEventListener('change', function() {
+  document.getElementById('jdBox').style.display = this.checked ? 'block' : 'none';
+});
+
+function scoreColor(n) {
+  if (n >= 8) return { text: 'var(--color-text-success)', bg: 'var(--color-background-success)', border: 'var(--color-border-success)' };
+  if (n >= 6) return { text: 'var(--color-text-warning)', bg: 'var(--color-background-warning)', border: 'var(--color-border-warning)' };
+  return { text: 'var(--color-text-danger)', bg: 'var(--color-background-danger)', border: 'var(--color-border-danger)' };
+}
+
+function metricColor(n) {
+  if (n >= 8) return '#1D9E75';
+  if (n >= 6) return '#BA7517';
+  return '#E24B4A';
+}
+
+async function analyze() {
+  const resume = document.getElementById('resumeText').value.trim();
+  if (!resume || resume.length < 80) {
+    showError('Please paste a more complete resume (at least a few sentences) before analyzing.');
+    return;
+  }
+  const hasJD = document.getElementById('jdToggle').checked;
+  const jd = hasJD ? document.getElementById('jdText').value.trim() : '';
+
+  showError('', false);
+  setLoading(true);
+
+  const systemPrompt = `You are a senior technical recruiter at a top-tier tech company (think FAANG/similar). You evaluate resumes with high standards. Analyze the given resume and return ONLY a valid JSON object — no markdown, no explanation, no preamble. The JSON must have exactly these keys:
+
+{
+  "score": <number 1-10, float allowed e.g. 7.5>,
+  "hire_recommendation": <"Strong hire" | "Hire" | "Maybe" | "No hire">,
+  "hire_reasoning": <string, 1-2 sentences>,
+  "communication_score": <1-10>,
+  "technical_score": <1-10>,
+  "leadership_score": <1-10>,
+  "projects_score": <1-10>,
+  "overall_impression": <string, 1-2 sentences>,
+  "strengths": [<array of 4-5 strings>],
+  "weaknesses": [<array of 3-4 strings>],
+  "missing_skills": [<array of 4-6 strings>],
+  "improvements": [<array of 4-5 actionable strings>],
+  "interview_questions": [<array of exactly 5 strings, behavioral + technical mix>],
+  "jd_alignment": <null if no JD, else object: { "score": <1-10>, "aligned": [<array of 3-5 strings>], "gaps": [<array of 2-4 strings>], "summary": <string> }>
+}
+
+Be honest and direct — not overly generous. High scores (9-10) are rare. Think like someone protecting hiring quality.`;
+
+  const userMsg = hasJD && jd
+    ? `Resume:\n${resume}\n\nJob Description:\n${jd}`
+    : `Resume:\n${resume}`;
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1800,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }]
+      })
+    });
+
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const r = JSON.parse(clean);
+    renderResults(r, hasJD && jd);
+  } catch (e) {
+    showError('Something went wrong: ' + e.message + '. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(on) {
+  document.getElementById('analyzeBtn').disabled = on;
+  document.getElementById('spinner').style.display = on ? 'inline-block' : 'none';
+  document.getElementById('btnIcon').style.display = on ? 'none' : 'inline';
+  document.getElementById('btnText').textContent = on ? 'Analyzing…' : 'Analyze resume';
+}
+
+function showError(msg, show = true) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.toggle('show', show);
+}
+
+function renderResults(r, hasJD) {
+  const sc = scoreColor(r.score);
+
+  const hireColors = {
+    'Strong hire': { bg: 'var(--color-background-success)', text: 'var(--color-text-success)', border: 'var(--color-border-success)', icon: 'ti-circle-check' },
+    'Hire': { bg: 'var(--color-background-info)', text: 'var(--color-text-info)', border: 'var(--color-border-info)', icon: 'ti-thumb-up' },
+    'Maybe': { bg: 'var(--color-background-warning)', text: 'var(--color-text-warning)', border: 'var(--color-border-warning)', icon: 'ti-help-circle' },
+    'No hire': { bg: 'var(--color-background-danger)', text: 'var(--color-text-danger)', border: 'var(--color-border-danger)', icon: 'ti-circle-x' }
+  };
+  const hc = hireColors[r.hire_recommendation] || hireColors['Maybe'];
+
+  document.getElementById('verdictCard').innerHTML = `
+    <div class="verdict" style="background:${hc.bg}; border-color:${hc.border};">
+      <i class="ti ${hc.icon} verdict-icon" style="color:${hc.text};" aria-hidden="true"></i>
+      <div>
+        <div class="verdict-title" style="color:${hc.text};">${r.hire_recommendation}</div>
+        <div class="verdict-sub" style="color:${hc.text}; opacity:0.85;">${r.hire_reasoning}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('scoreCard').innerHTML = `
+    <div class="card-title"><i class="ti ti-star" aria-hidden="true"></i> Overall score</div>
+    <div class="score-wrap">
+      <div class="score-circle" style="color:${sc.text}; border-color:${sc.text}; background:${sc.bg};">
+        ${parseFloat(r.score).toFixed(1)}<span style="font-size:12px; font-weight:400;">/10</span>
+      </div>
+      <div>
+        <div class="score-label"><span>${r.hire_recommendation}</span>Recruiter verdict</div>
+        <div style="font-size:12px; color:var(--color-text-tertiary); margin-top:6px; max-width:160px; line-height:1.5;">${r.overall_impression}</div>
+      </div>
+    </div>`;
+
+  const metrics = [
+    { label: 'Communication', val: r.communication_score, icon: 'ti-message' },
+    { label: 'Technical', val: r.technical_score, icon: 'ti-code' },
+    { label: 'Leadership', val: r.leadership_score, icon: 'ti-users' },
+    { label: 'Projects', val: r.projects_score, icon: 'ti-rocket' },
+  ];
+  document.getElementById('metricsCard').innerHTML = `
+    <div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Category scores</div>
+    <div class="metrics-grid">
+      ${metrics.map(m => `
+        <div class="metric-card">
+          <div class="metric-label"><i class="ti ${m.icon}" aria-hidden="true"></i> ${m.label}</div>
+          <div class="metric-val" style="color:${metricColor(m.val)};">${m.val}<span style="font-size:12px; color:var(--color-text-tertiary);">/10</span></div>
+          <div class="metric-bar"><div class="metric-fill" style="width:${m.val*10}%; background:${metricColor(m.val)};"></div></div>
+        </div>`).join('')}
+    </div>`;
+
+  document.getElementById('strengthsCard').innerHTML = `
+    <div class="card-title"><i class="ti ti-circle-check" style="color:var(--color-text-success);" aria-hidden="true"></i> Strengths</div>
+    <ul class="item-list">
+      ${r.strengths.map(s => `<li><i class="ti ti-check" style="color:var(--color-text-success);" aria-hidden="true"></i>${s}</li>`).join('')}
+    </ul>`;
+
+  document.getElementById('weaknessesCard').innerHTML = `
+    <div class="card-title"><i class="ti ti-alert-circle" style="color:var(--color-text-danger);" aria-hidden="true"></i> Weaknesses</div>
+    <ul class="item-list">
+      ${r.weaknesses.map(w => `<li><i class="ti ti-x" style="color:var(--color-text-danger);" aria-hidden="true"></i>${w}</li>`).join('')}
+    </ul>`;
+
+  document.getElementById('missingCard').innerHTML = `
+    <div class="card-title"><i class="ti ti-puzzle" style="color:var(--color-text-warning);" aria-hidden="true"></i> Missing skills & gaps</div>
+    <div class="tag-list">${r.missing_skills.map(s => `<span class="tag tag-amber">${s}</span>`).join('')}</div>`;
+
+  document.getElementById('improvementsCard').innerHTML = `
+    <div class="card-title"><i class="ti ti-edit" style="color:var(--color-text-info);" aria-hidden="true"></i> Suggested improvements</div>
+    <ul class="item-list">
+      ${r.improvements.map(imp => `<li><i class="ti ti-arrow-right" style="color:var(--color-text-info);" aria-hidden="true"></i>${imp}</li>`).join('')}
+    </ul>`;
+
+  document.getElementById('questionsCard').innerHTML = `
+    <div class="card-title"><i class="ti ti-help-circle" aria-hidden="true"></i> Recommended interview questions</div>
+    ${r.interview_questions.map((q, i) => `<div class="q-item"><span class="q-num">Q${i+1}</span><span>${q}</span></div>`).join('')}`;
+
+  const alignCard = document.getElementById('alignmentCard');
+  if (hasJD && r.jd_alignment) {
+    const al = r.jd_alignment;
+    const asc = scoreColor(al.score);
+    alignCard.style.display = 'block';
+    alignCard.innerHTML = `
+      <div class="card-title"><i class="ti ti-target" aria-hidden="true"></i> JD alignment</div>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:1rem;">
+        <span class="align-pill" style="background:${asc.bg}; color:${asc.text};">
+          <i class="ti ti-percentage" aria-hidden="true"></i> ${al.score}/10 match
+        </span>
+        <span style="font-size:13px; color:var(--color-text-secondary);">${al.summary}</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+        <div>
+          <div class="section-title" style="color:var(--color-text-success);"><i class="ti ti-check" aria-hidden="true"></i> Aligned areas</div>
+          <ul class="item-list">${al.aligned.map(a => `<li><i class="ti ti-circle-check" style="color:var(--color-text-success);" aria-hidden="true"></i>${a}</li>`).join('')}</ul>
+        </div>
+        <div>
+          <div class="section-title" style="color:var(--color-text-danger);"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Gaps vs. JD</div>
+          <ul class="item-list">${al.gaps.map(g => `<li><i class="ti ti-x" style="color:var(--color-text-danger);" aria-hidden="true"></i>${g}</li>`).join('')}</ul>
+        </div>
+      </div>`;
+  } else {
+    alignCard.style.display = 'none';
+  }
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
